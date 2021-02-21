@@ -36,3 +36,7 @@
     transform: rotate(360deg);
   }
 }
+
+.currentWeatherElement {
+  margin-right: 15px;
+}
