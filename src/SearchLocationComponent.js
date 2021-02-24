@@ -42,7 +42,8 @@ const SearchLocationComponent = ({ dispatchWeather }) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSearchSubmit = async () => {
+  const handleSearchSubmit = async (e) => {
+    e.preventDefault();
     dispatchSearchLocations({ type: "LOCATION_FETCH_INIT" });
     try {
       const rawData = await fetch(
@@ -57,7 +58,7 @@ const SearchLocationComponent = ({ dispatchWeather }) => {
           longitude: Math.round(postalCode.lng * 10000) / 10000,
           latitude: Math.round(postalCode.lat * 10000) / 10000,
         };
-        localStorage.setItem("location", postalCode.location);
+        localStorage.setItem("location", postalCode.placeName);
         localStorage.setItem("coordinates", JSON.stringify(coordinates));
 
         dispatchWeather({
@@ -80,7 +81,9 @@ const SearchLocationComponent = ({ dispatchWeather }) => {
       <form onSubmit={handleSearchSubmit}>
         <label htmlFor="search"></label>
         <input id="search" type="text" onChange={handleSearchInput} />
-        <button type="submit" disabled={!searchTerm}></button>
+        <button type="submit" disabled={!searchTerm}>
+          Search
+        </button>
       </form>
       {searchLocations.isLoading && <p>Loading...</p>}
       {searchLocations.isError && (

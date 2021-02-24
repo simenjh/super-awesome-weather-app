@@ -10,7 +10,7 @@ export const weatherReducer = (state, action) => {
         isLoading: false,
         isError: false,
         location: action.payload.location,
-        coordinates: action.payload.coordinates,
+        coordinates: { ...action.payload.coordinates },
         currentConditions: action.payload.currentConditions,
         expires: action.payload.expires,
       };
@@ -48,15 +48,31 @@ export const weatherReducer = (state, action) => {
 const locationForecastEndpoint =
   "https://api.met.no/weatherapi/locationforecast/2.0/compact?";
 
+const extractCurrentConditions = (rawData) => {
+  const timeseries = rawData.properties.timeseries;
+  const nowString = new Date().toISOString().substring(0, 13);
+  const currentWeather = timeseries.find(
+    (weather) => weather.time.substring(0, 13) === nowString
+  );
+  return currentWeather.data;
+};
+
+const updateLocalStorage = (currentConditions, expires) => {
+  localStorage.setItem("currentConditions", JSON.stringify(currentConditions));
+  localStorage.setItem("expires", JSON.stringify(expires));
+};
+
 const App = () => {
   const [weather, dispatchWeather] = useReducer(weatherReducer, {
     isLoading: false,
     isError: false,
-    location: "Kongsberg",
+    location: null,
     coordinates: null,
     currentConditions: null,
     expires: null,
   });
+
+  console.log(weather);
 
   const fetchWeatherData = useCallback(async () => {
     dispatchWeather({ type: "WEATHER_FETCH_INIT" });
@@ -72,9 +88,9 @@ const App = () => {
         }
       );
       const rawData = await res.json();
-      const { currentConditions, expires } = extractCurrentConditionsAndExpiry(
-        rawData
-      );
+      const currentConditions = extractCurrentConditions(rawData);
+      const expires = res.headers.get("expires");
+      updateLocalStorage(currentConditions, expires);
       dispatchWeather({
         type: "WEATHER_FETCH_SUCCESS",
         payload: { currentConditions, expires },
@@ -95,10 +111,12 @@ const App = () => {
       dispatchWeather({
         type: "WEATHER_FETCH_LOCALSTORAGE",
         payload: {
-          location: localStorage.location,
-          coordinates: JSON.parse(localStorage.coordinates),
-          currentConditions: JSON.parse(localStorage.currentConditions),
-          expires: localStorage.expires,
+          location: localStorage.getItem("location"),
+          coordinates: JSON.parse(localStorage.getItem("coordinates")),
+          currentConditions: JSON.parse(
+            localStorage.getItem("currentConditions")
+          ),
+          expires: localStorage.getItem("expires"),
         },
       });
     } else if (localStorage.coordinates) {
@@ -119,11 +137,10 @@ const App = () => {
         <p>Loading...</p>
       ) : (
         <>
-          {/* <LocationComponent /> */}
-          <CurrentConditionsComponent
-            location={weather.location}
+          {/* <LocationComponent location={weather.location} /> */}
+          {/* <CurrentConditionsComponent
             currentConditions={weather.currentConditions}
-          />
+          /> */}
           {/* <FutureForecast /> */}
         </>
       )}
@@ -133,21 +150,26 @@ const App = () => {
 
 export default App;
 
-const CurrentConditionsComponent = ({ location, currentConditions }) => {
+const CurrentConditionsComponent = ({ currentConditions }) => {
+  const details = currentConditions.instant.details;
+  const weather_symbol = currentConditions.next_1_hours.summary.symbol_code;
+  const precipitation_amount =
+    currentConditions.next_1_hours.details.precipitation_amount;
+
   return (
     <div style={{ display: "flex" }}>
       <span className="currentWeatherElement">Some weather icon</span>
       <div className="currentWeatherElement">
         <span>Temp icon</span>
-        <span>Temp number</span>
+        <span>{details.air_temperature}</span>
       </div>
       <div className="currentWeatherElement">
         <span>Precip icon</span>
-        <span>Precip number</span>
+        <span>{precipitation_amount}</span>
       </div>
       <div className="currentWeatherElement">
         <span>Wind icon</span>
-        <span>Wind number</span>
+        <span>{details.wind_direction}</span>
       </div>
     </div>
   );
