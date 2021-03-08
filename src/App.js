@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useState } from "react";
 import "./App.css";
 import SearchLocationComponent from "./SearchLocationComponent";
+import CurrentConditionsComponent from "./CurrentConditions";
 
 export const weatherReducer = (state, action) => {
   switch (action.type) {
@@ -10,7 +11,8 @@ export const weatherReducer = (state, action) => {
         isLoading: false,
         isError: false,
         location: action.payload.location,
-        coordinates: { ...action.payload.coordinates },
+        // coordinates: { ...action.payload.coordinates },
+        coordinates: action.payload.coordinates,
         currentConditions: action.payload.currentConditions,
         expires: action.payload.expires,
       };
@@ -34,11 +36,25 @@ export const weatherReducer = (state, action) => {
         isLoading: false,
         isError: true,
       };
+    case "SET_COORDINATES":
+      return {
+        ...state,
+        coordinates: action.payload.coordinates,
+      };
     case "SET_PLACE_COORDINATES":
       return {
         ...state,
         location: action.payload.location,
         coordinates: action.payload.coordinates,
+      };
+    case "RESET_WEATHER":
+      return {
+        isLoading: false,
+        isError: false,
+        location: null,
+        coordinates: { longitude: null, latitude: null },
+        currentConditions: null,
+        expires: null,
       };
     default:
       throw new Error();
@@ -59,7 +75,7 @@ const extractCurrentConditions = (rawData) => {
 
 const updateLocalStorage = (currentConditions, expires) => {
   localStorage.setItem("currentConditions", JSON.stringify(currentConditions));
-  localStorage.setItem("expires", JSON.stringify(expires));
+  localStorage.setItem("expires", expires);
 };
 
 const App = () => {
@@ -67,14 +83,15 @@ const App = () => {
     isLoading: false,
     isError: false,
     location: null,
-    coordinates: null,
+    coordinates: { longitude: null, latitude: null },
     currentConditions: null,
     expires: null,
   });
 
   console.log(weather);
 
-  const fetchWeatherData = useCallback(async () => {
+  // Fetch weather when coordinates are updated
+  const fetchWeatherData = async () => {
     dispatchWeather({ type: "WEATHER_FETCH_INIT" });
 
     try {
@@ -98,16 +115,29 @@ const App = () => {
     } catch (err) {
       dispatchWeather({ type: "WEATHER_FETCH_FAILURE" });
     }
-  }, [weather.coordinates]);
+  };
 
+  // Cases
+  // 1. A user enters a location and clicks search. The coordinates should be set in weather, triggering a redefine of fetchWeather. This triggers useEffect.
+  // 2. The program has no state, but has non-expired weather data in localstorage. Set localstorage data as the weather state.
+  // 3. The program has no state, and localstorage data has expired. Pass coordinates from localstorage to weather.
+  // 4.
   useEffect(() => {
+    console.log("Run useeffect");
+    const localstorageExpires = localStorage.getItem("expires");
+    const localStorageCoordinates = JSON.parse(
+      localStorage.getItem("coordinates")
+    );
+    const localStorageLocation = localStorage.getItem("location");
     if (
       localStorage.location &&
       localStorage.coordinates &&
       localStorage.currentConditions &&
       localStorage.expires &&
-      new Date(localStorage.getItem("expires")) > new Date()
+      new Date(localstorageExpires) > new Date() &&
+      localstorageExpires !== weather.expires
     ) {
+      console.log("Pass weather data from localstorage to weather");
       dispatchWeather({
         type: "WEATHER_FETCH_LOCALSTORAGE",
         payload: {
@@ -119,58 +149,61 @@ const App = () => {
           expires: localStorage.getItem("expires"),
         },
       });
-    } else if (localStorage.coordinates) {
+      setInterval(() => {
+        fetchWeatherData();
+      }, 1800000);
+    } else if (weather.coordinates.longitude && !weather.currentConditions) {
+      console.log("fetch weather data");
       fetchWeatherData();
       setInterval(() => {
         fetchWeatherData();
       }, 1800000);
+    } else if (localStorageCoordinates && !weather.currentConditions) {
+      console.log("Dispatch SET_PLACE_COORDINATES");
+      dispatchWeather({
+        type: "SET_PLACE_COORDINATES",
+        payload: {
+          location: localStorageLocation,
+          coordinates: localStorageCoordinates,
+        },
+      });
     }
-  }, [fetchWeatherData]);
+  }, [
+    weather.coordinates.longitude,
+    weather.coordinates.latitude,
+    weather.expires,
+  ]);
 
   return (
     <div className="App">
-      <SearchLocationComponent dispatchWeather={dispatchWeather} />
+      <div className="outerContainer" style={{ paddingTop: "10px" }}>
+        <SearchLocationComponent dispatchWeather={dispatchWeather} />
 
-      {weather.isError && <p>Something went wrong...</p>}
+        {weather.isError && <p>Something went wrong...</p>}
 
-      {weather.isLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <>
-          {/* <LocationComponent location={weather.location} /> */}
-          {/* <CurrentConditionsComponent
-            currentConditions={weather.currentConditions}
-          /> */}
-          {/* <FutureForecast /> */}
-        </>
-      )}
+        {weather.isLoading ? (
+          <p>Loading...</p>
+        ) : (
+          <>
+            {/* {weather.location && (
+              <LocationComponent location={weather.location} />
+            )} */}
+            {weather.currentConditions && (
+              <CurrentConditionsComponent
+                location={weather.location}
+                currentConditions={weather.currentConditions}
+              />
+            )}
+            {/* <FutureForecast /> */}
+          </>
+        )}
+      </div>
     </div>
   );
 };
 
 export default App;
 
-const CurrentConditionsComponent = ({ currentConditions }) => {
-  const details = currentConditions.instant.details;
-  const weather_symbol = currentConditions.next_1_hours.summary.symbol_code;
-  const precipitation_amount =
-    currentConditions.next_1_hours.details.precipitation_amount;
-
-  return (
-    <div style={{ display: "flex" }}>
-      <span className="currentWeatherElement">Some weather icon</span>
-      <div className="currentWeatherElement">
-        <span>Temp icon</span>
-        <span>{details.air_temperature}</span>
-      </div>
-      <div className="currentWeatherElement">
-        <span>Precip icon</span>
-        <span>{precipitation_amount}</span>
-      </div>
-      <div className="currentWeatherElement">
-        <span>Wind icon</span>
-        <span>{details.wind_direction}</span>
-      </div>
-    </div>
-  );
+const LocationComponent = ({ location }) => {
+  return <p>{location}</p>;
 };
