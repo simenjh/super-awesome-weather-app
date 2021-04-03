@@ -2,6 +2,7 @@ import { useCallback, useEffect, useReducer, useState } from "react";
 import "./App.css";
 import SearchLocationComponent from "./SearchLocationComponent";
 import CurrentConditionsComponent from "./CurrentConditions";
+import FutureForecast from "./FutureForecast";
 
 export const weatherReducer = (state, action) => {
   switch (action.type) {
@@ -11,9 +12,9 @@ export const weatherReducer = (state, action) => {
         isLoading: false,
         isError: false,
         location: action.payload.location,
-        // coordinates: { ...action.payload.coordinates },
         coordinates: action.payload.coordinates,
         currentConditions: action.payload.currentConditions,
+        futureConditions: action.payload.futureConditions,
         expires: action.payload.expires,
       };
     case "WEATHER_FETCH_INIT":
@@ -28,6 +29,7 @@ export const weatherReducer = (state, action) => {
         isLoading: false,
         isError: false,
         currentConditions: action.payload.currentConditions,
+        futureConditions: action.payload.futureConditions,
         expires: action.payload.expires,
       };
     case "WEATHER_FETCH_FAILURE":
@@ -54,6 +56,7 @@ export const weatherReducer = (state, action) => {
         location: null,
         coordinates: { longitude: null, latitude: null },
         currentConditions: null,
+        futureConditions: null,
         expires: null,
       };
     default:
@@ -62,7 +65,7 @@ export const weatherReducer = (state, action) => {
 };
 
 const locationForecastEndpoint =
-  "https://api.met.no/weatherapi/locationforecast/2.0/compact?";
+  "https://api.met.no/weatherapi/locationforecast/2.0/complete?";
 
 const extractCurrentConditions = (rawData) => {
   const timeseries = rawData.properties.timeseries;
@@ -73,8 +76,13 @@ const extractCurrentConditions = (rawData) => {
   return currentWeather.data;
 };
 
-const updateLocalStorage = (currentConditions, expires) => {
+const extractFutureConditions = (rawData) => {
+  return rawData.properties.timeseries;
+};
+
+const updateLocalStorage = (currentConditions, futureConditions, expires) => {
   localStorage.setItem("currentConditions", JSON.stringify(currentConditions));
+  localStorage.setItem("futureConditions", JSON.stringify(futureConditions));
   localStorage.setItem("expires", expires);
 };
 
@@ -85,10 +93,11 @@ const App = () => {
     location: null,
     coordinates: { longitude: null, latitude: null },
     currentConditions: null,
+    futureConditions: null,
     expires: null,
   });
 
-  console.log(weather);
+  // console.log(weather);
 
   // Fetch weather when coordinates are updated
   const fetchWeatherData = async () => {
@@ -106,11 +115,12 @@ const App = () => {
       );
       const rawData = await res.json();
       const currentConditions = extractCurrentConditions(rawData);
+      const futureConditions = extractFutureConditions(rawData);
       const expires = res.headers.get("expires");
-      updateLocalStorage(currentConditions, expires);
+      updateLocalStorage(currentConditions, futureConditions, expires);
       dispatchWeather({
         type: "WEATHER_FETCH_SUCCESS",
-        payload: { currentConditions, expires },
+        payload: { currentConditions, futureConditions, expires },
       });
     } catch (err) {
       dispatchWeather({ type: "WEATHER_FETCH_FAILURE" });
@@ -123,7 +133,7 @@ const App = () => {
   // 3. The program has no state, and localstorage data has expired. Pass coordinates from localstorage to weather.
   // 4.
   useEffect(() => {
-    console.log("Run useeffect");
+    // console.log("Run useeffect");
     const localstorageExpires = localStorage.getItem("expires");
     const localStorageCoordinates = JSON.parse(
       localStorage.getItem("coordinates")
@@ -133,11 +143,12 @@ const App = () => {
       localStorage.location &&
       localStorage.coordinates &&
       localStorage.currentConditions &&
+      localStorage.futureConditions &&
       localStorage.expires &&
       new Date(localstorageExpires) > new Date() &&
       localstorageExpires !== weather.expires
     ) {
-      console.log("Pass weather data from localstorage to weather");
+      // console.log("Pass weather data from localstorage to weather");
       dispatchWeather({
         type: "WEATHER_FETCH_LOCALSTORAGE",
         payload: {
@@ -146,6 +157,9 @@ const App = () => {
           currentConditions: JSON.parse(
             localStorage.getItem("currentConditions")
           ),
+          futureConditions: JSON.parse(
+            localStorage.getItem("futureConditions")
+          ),
           expires: localStorage.getItem("expires"),
         },
       });
@@ -153,13 +167,13 @@ const App = () => {
         fetchWeatherData();
       }, 1800000);
     } else if (weather.coordinates.longitude && !weather.currentConditions) {
-      console.log("fetch weather data");
+      // console.log("fetch weather data");
       fetchWeatherData();
       setInterval(() => {
         fetchWeatherData();
       }, 1800000);
     } else if (localStorageCoordinates && !weather.currentConditions) {
-      console.log("Dispatch SET_PLACE_COORDINATES");
+      // console.log("Dispatch SET_PLACE_COORDINATES");
       dispatchWeather({
         type: "SET_PLACE_COORDINATES",
         payload: {
@@ -184,18 +198,17 @@ const App = () => {
         {weather.isLoading ? (
           <p>Loading...</p>
         ) : (
-          <>
-            {/* {weather.location && (
-              <LocationComponent location={weather.location} />
-            )} */}
+          <div>
             {weather.currentConditions && (
               <CurrentConditionsComponent
                 location={weather.location}
                 currentConditions={weather.currentConditions}
               />
             )}
-            {/* <FutureForecast /> */}
-          </>
+            {weather.futureConditions && (
+              <FutureForecast futureConditions={weather.futureConditions} />
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -203,7 +216,3 @@ const App = () => {
 };
 
 export default App;
-
-const LocationComponent = ({ location }) => {
-  return <p>{location}</p>;
-};

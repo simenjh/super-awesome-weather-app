@@ -85,11 +85,6 @@ const SearchLocationComponent = ({ dispatchWeather }) => {
   return (
     <>
       <form onSubmit={handleSearchSubmit}>
-        {/* <label htmlFor="search"></label>
-        <input id="search" type="text" onChange={handleSearchInput} />
-        <button type="submit" disabled={!searchTerm}>
-          Search
-        </button> */}
         <SearchFieldButton
           handleSearchInput={handleSearchInput}
           searchTerm={searchTerm}
@@ -107,9 +102,9 @@ export default SearchLocationComponent;
 
 const SearchFieldButton = ({ handleSearchInput, searchTerm }) => {
   return (
-    <div className="pt-2 relative mx-auto text-gray-600 mb-10">
+    <div className="relative pt-2 mx-auto mb-10 text-gray-600">
       <input
-        className="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none"
+        className="h-10 px-5 pr-16 text-sm bg-white border-2 border-gray-300 rounded-lg focus:outline-none"
         type="search"
         name="search"
         placeholder="Search"
@@ -117,11 +112,11 @@ const SearchFieldButton = ({ handleSearchInput, searchTerm }) => {
       />
       <button
         type="submit"
-        className="absolute right-0 top-0 mt-5 mr-4"
+        className="absolute top-0 right-0 mt-5 mr-4"
         disabled={!searchTerm}
       >
         <svg
-          className="text-gray-600 h-4 w-4 fill-current"
+          className="w-4 h-4 text-gray-600 fill-current"
           xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink"
           version="1.1"
