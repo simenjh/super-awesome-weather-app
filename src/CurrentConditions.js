@@ -3,6 +3,7 @@ import { ReactComponent as UmbrellaIcon } from "./assets/umbrella_icon.svg";
 import { ReactComponent as WindIcon } from "./assets/wind-icons/wind_icon.svg";
 import SVGIcon from "./SVGIcon";
 import { windFromDirectionPath, weatherIconPath } from "./icon_paths";
+const round = Math.round;
 
 const CurrentConditionsComponent = ({ location, currentConditions }) => {
   const details = currentConditions.instant.details;
@@ -26,19 +27,19 @@ const CurrentConditionsComponent = ({ location, currentConditions }) => {
             <div className="flex mr-7">
               <TempIcon width={"30px"} />
               <span className={`${tempColor}`}>
-                {details.air_temperature}°C
+                {round(details.air_temperature)}°
               </span>
             </div>
             <div className="flex text-blue-500 mr-7">
               <UmbrellaIcon className="mr-1" width={"30px"} />
               <span>
-                {precipitation_amount}
+                {round(precipitation_amount)}
                 <span className="text-xl">mm</span>
               </span>
             </div>
             <div className="flex">
               <WindIcon className="mr-1" width={"30px"} />
-              <span className="mr-2">{details.wind_speed}m/s</span>
+              <span className="mr-2">{round(details.wind_speed)}m/s</span>
               <SVGIcon
                 className="self-end"
                 fill={"#374151"}

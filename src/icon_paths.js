@@ -4,7 +4,7 @@ export const windFromDirectionPath = (windFromDirection) => {
   const beginningOfPath = "wind-icons/";
   let fileName = "";
 
-  if (windFromDirection >= 337.5 && windFromDirection < 22.5)
+  if (windFromDirection >= 337.5 || windFromDirection < 22.5)
     fileName = "wind_north";
   else if (windFromDirection >= 22.5 && windFromDirection < 67.5)
     fileName = "wind_northeast";
