@@ -39,7 +39,7 @@ const FutureForecast = ({ futureConditions }) => {
     <div className="flex flex-col items-center" style={{ width: "100%" }}>
       <TodayForecastComponent todayForecast={todayForecast} />
       {futureDaysForecast.map((day) => {
-        return <ForecastForFutureDay day={day} />;
+        return <ForecastForFutureDay key={day.dayNumber} day={day} />;
       })}
     </div>
   );
@@ -237,16 +237,17 @@ const ForecastForFutureDay = ({ day }) => {
       ? extractFutureDayOverviewOrDetailed(day.data, true)
       : null;
   const [isExpanded, setIsExpanded] = useState(false);
+  console.log(futureDayDetailed);
 
   return (
     <div
-      className={`w-full ${futureDayDetailed ? "cursor-pointer" : ""}`}
+      className={`w-full mb-5 ${futureDayDetailed ? "cursor-pointer" : ""}`}
       onClick={futureDayDetailed ? () => setIsExpanded(!isExpanded) : null}
     >
       <DayHeader dayTitle={futureDayText} />
-      {/* <FutureDayOverviewComponent
-        todayOverview={isExpanded ? futureDayDetailed : futureDaySummary}
-      /> */}
+      <FutureDayOverviewComponent
+        futureDayOverview={isExpanded ? futureDayDetailed : futureDaySummary}
+      />
     </div>
   );
 };
@@ -270,6 +271,7 @@ function extractFutureDayOverviewOrDetailed(dayForecast, hourly = false) {
         weatherSymbolCode: nextSixHours.summary.symbol_code,
         minAirTemperature: nextSixHours.details.air_temperature_min,
         maxAirTemperature: nextSixHours.details.air_temperature_max,
+        precipitationAmount: nextSixHours.details.precipitation_amount,
         windFromDirection: details.wind_from_direction,
         windSpeed: details.wind_speed,
       };
@@ -291,10 +293,83 @@ function extractFutureDayOverviewOrDetailed(dayForecast, hourly = false) {
 }
 
 function formatFutureDayText(day) {
-  console.log(day.data[0]);
   const futureDate = new Date(day.data[0].time.substring(0, 10));
   const tomorrowOrFutureString = day.dayNumber === 1 ? "Tomorrow, " : "";
   return `${tomorrowOrFutureString}${days[futureDate.getDay()]} ${
     months[futureDate.getMonth()]
   } ${futureDate.getDate()}`;
 }
+
+const FutureDayOverviewComponent = ({ futureDayOverview }) => {
+  return (
+    <table className="w-full border-collapse">
+      <tbody>
+        {futureDayOverview.map((weather, index) => (
+          <tr
+            key={index}
+            className={`border border-l-0 border-r-0 border-gray-400 ${
+              index === 0 ? "border-t-0" : ""
+            } ${index === futureDayOverview.length - 1 ? "border-b-0" : ""}`}
+          >
+            <td className="w-1/5 pt-2.5 pb-2.5">{weather.hour}</td>
+            <td className="w-1/5">
+              <SVGIcon
+                className="self-center"
+                path={`${weatherIconPath}${weather.weatherSymbolCode}`}
+                width={"30px"}
+              />
+            </td>
+            <td className="w-1/5">
+              <div className="flex">
+                <TempIcon width={"25px"} />
+                {weather.airTemperature ? (
+                  <div
+                    className={
+                      weather.airTemperature > 0
+                        ? "text-red-600"
+                        : "text-blue-500"
+                    }
+                  >
+                    {round(weather.airTemperature)}°
+                  </div>
+                ) : (
+                  <div>
+                    <span className="text-red-600">
+                      {round(weather.maxAirTemperature)}°
+                    </span>
+                    /
+                    <span className="text-blue-600">
+                      {round(weather.minAirTemperature)}°
+                    </span>
+                  </div>
+                )}
+              </div>
+            </td>
+            <td className="w-1/5 text-blue-500">
+              <div className="flex">
+                <UmbrellaIcon className="mr-1" width={"25px"} />
+                <div>
+                  {round(weather.precipitationAmount)}
+                  <span className="text">mm</span>
+                </div>
+              </div>
+            </td>
+            <td className="w-1/5">
+              <div className="flex justify-end">
+                <WindIcon className="mr-1" width={"25px"} />
+                <span className="mr-2">{round(weather.windSpeed)}m/s</span>
+                <SVGIcon
+                  className="self-end"
+                  fill={"#374151"}
+                  path={windFromDirectionPath(weather.windFromDirection)}
+                  width={"30px"}
+                  height={"30px"}
+                />
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
