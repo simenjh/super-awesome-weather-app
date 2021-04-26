@@ -222,7 +222,7 @@ const ForecastForFutureDay = ({ day }) => {
 
   return (
     <div
-      className={`w-full mb-5 ${futureDayDetailed ? "cursor-pointer" : ""}`}
+      className={`w-full ${futureDayDetailed ? "cursor-pointer" : ""}`}
       onClick={futureDayDetailed ? () => setIsExpanded(!isExpanded) : null}
     >
       <DayHeader dayTitle={futureDayText} />
