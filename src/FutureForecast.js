@@ -222,7 +222,7 @@ const ForecastForFutureDay = ({ day }) => {
 
   return (
     <div
-      className={`w-full ${futureDayDetailed ? "cursor-pointer" : ""}`}
+      className={`w-full mb-5 ${futureDayDetailed ? "cursor-pointer" : ""}`}
       onClick={futureDayDetailed ? () => setIsExpanded(!isExpanded) : null}
     >
       <DayHeader dayTitle={futureDayText} />
@@ -265,7 +265,7 @@ function extractFutureDayOverviewOrDetailed(dayForecast, hourly = false) {
         hour: weather.time.substring(11, 16),
         weatherSymbolCode: nextOneHours.summary.symbol_code,
         precipitationAmount: round(nextOneHours.details.precipitation_amount),
-        airTemperature: details.air_temperature,
+        airTemperature: round(details.air_temperature),
         windFromDirection: details.wind_from_direction,
         windSpeed: round(details.wind_speed),
       };
@@ -303,7 +303,7 @@ const FutureDayOverviewComponent = ({ futureDayOverview }) => {
             <td className="w-1/5">
               <div className="flex">
                 <TempIcon width={"25px"} />
-                {weather.airTemperature ? (
+                {weather.hasOwnProperty("airTemperature") ? (
                   <div
                     className={
                       weather.airTemperature > 0
