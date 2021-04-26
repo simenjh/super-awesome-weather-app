@@ -97,8 +97,6 @@ const App = () => {
     expires: null,
   });
 
-  // console.log(weather);
-
   // Fetch weather when coordinates are updated
   const fetchWeatherData = async () => {
     dispatchWeather({ type: "WEATHER_FETCH_INIT" });
@@ -133,7 +131,6 @@ const App = () => {
   // 3. The program has no state, and localstorage data has expired. Pass coordinates from localstorage to weather.
   // 4.
   useEffect(() => {
-    // console.log("Run useeffect");
     const localstorageExpires = localStorage.getItem("expires");
     const localStorageCoordinates = JSON.parse(
       localStorage.getItem("coordinates")
@@ -148,7 +145,6 @@ const App = () => {
       new Date(localstorageExpires) > new Date() &&
       localstorageExpires !== weather.expires
     ) {
-      // console.log("Pass weather data from localstorage to weather");
       dispatchWeather({
         type: "WEATHER_FETCH_LOCALSTORAGE",
         payload: {
@@ -167,13 +163,11 @@ const App = () => {
         fetchWeatherData();
       }, 1800000);
     } else if (weather.coordinates.longitude && !weather.currentConditions) {
-      // console.log("fetch weather data");
       fetchWeatherData();
       setInterval(() => {
         fetchWeatherData();
       }, 1800000);
     } else if (localStorageCoordinates && !weather.currentConditions) {
-      // console.log("Dispatch SET_PLACE_COORDINATES");
       dispatchWeather({
         type: "SET_PLACE_COORDINATES",
         payload: {
@@ -198,7 +192,7 @@ const App = () => {
         {weather.isLoading ? (
           <p>Loading...</p>
         ) : (
-          <div>
+          <div className="mb-5">
             {weather.currentConditions && (
               <CurrentConditionsComponent
                 location={weather.location}

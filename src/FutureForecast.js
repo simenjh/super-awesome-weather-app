@@ -130,10 +130,10 @@ const extractTodayOverviewOrDetailed = (todayForecast, hourly = false) => {
     return {
       hour: weather.time.substring(11, 16),
       weatherSymbolCode: nextOneHours.summary.symbol_code,
-      precipitationAmount: nextOneHours.details.precipitation_amount,
-      airTemperature: details.air_temperature,
+      precipitationAmount: round(nextOneHours.details.precipitation_amount),
+      airTemperature: round(details.air_temperature),
       windFromDirection: details.wind_from_direction,
-      windSpeed: details.wind_speed,
+      windSpeed: round(details.wind_speed),
     };
   });
 };
@@ -141,7 +141,7 @@ const extractTodayOverviewOrDetailed = (todayForecast, hourly = false) => {
 const DayHeader = ({ dayTitle }) => {
   return (
     <div
-      className="pt-3 pb-2 pl-2 text-lg text-center text-white bg-blue-400 rounded"
+      className="pt-1 pb-1 pl-2 text-lg text-center text-white bg-blue-400 rounded"
       style={{ width: "100%" }}
     >
       {dayTitle}
@@ -178,31 +178,15 @@ const TodayOverviewComponent = ({ todayOverview }) => {
                       : "text-blue-500"
                   }
                 >
-                  {round(hourlyWeather.airTemperature)}°
+                  {hourlyWeather.airTemperature}°
                 </div>
-                {/* {hourlyWeather.minMaxTemp ? (
-                  <div>
-                    <span className="text-red-600">5°</span>/
-                    <span className="text-blue-600">-5°</span>
-                  </div>
-                ) : (
-                  <div
-                    className={
-                      hourlyWeather.airTemperature > 0
-                        ? "text-red-600"
-                        : "text-blue-500"
-                    }
-                  >
-                    {round(hourlyWeather.airTemperature)}°
-                  </div>
-                )} */}
               </div>
             </td>
             <td className="w-1/5 text-blue-500">
               <div className="flex">
                 <UmbrellaIcon className="mr-1" width={"25px"} />
                 <div>
-                  {round(hourlyWeather.precipitationAmount)}
+                  {hourlyWeather.precipitationAmount}
                   <span className="text">mm</span>
                 </div>
               </div>
@@ -210,9 +194,7 @@ const TodayOverviewComponent = ({ todayOverview }) => {
             <td className="w-1/5">
               <div className="flex justify-end">
                 <WindIcon className="mr-1" width={"25px"} />
-                <span className="mr-2">
-                  {round(hourlyWeather.windSpeed)}m/s
-                </span>
+                <span className="mr-2">{hourlyWeather.windSpeed}m/s</span>
                 <SVGIcon
                   className="self-end"
                   fill={"#374151"}
@@ -237,11 +219,10 @@ const ForecastForFutureDay = ({ day }) => {
       ? extractFutureDayOverviewOrDetailed(day.data, true)
       : null;
   const [isExpanded, setIsExpanded] = useState(false);
-  console.log(futureDayDetailed);
 
   return (
     <div
-      className={`w-full mb-5 ${futureDayDetailed ? "cursor-pointer" : ""}`}
+      className={`w-full ${futureDayDetailed ? "cursor-pointer" : ""}`}
       onClick={futureDayDetailed ? () => setIsExpanded(!isExpanded) : null}
     >
       <DayHeader dayTitle={futureDayText} />
@@ -266,14 +247,14 @@ function extractFutureDayOverviewOrDetailed(dayForecast, hourly = false) {
       const nextSixHours = weather.data.next_6_hours;
       return {
         hour: `${weather.time.substring(11, 13)}-${
-          parseInt(weather.time.substring(11, 13)) + 6
-        }`,
+          weather.time.substring(11, 13) === "00" ? "0" : ""
+        }${parseInt(weather.time.substring(11, 13)) + 6}`,
         weatherSymbolCode: nextSixHours.summary.symbol_code,
-        minAirTemperature: nextSixHours.details.air_temperature_min,
-        maxAirTemperature: nextSixHours.details.air_temperature_max,
-        precipitationAmount: nextSixHours.details.precipitation_amount,
+        minAirTemperature: round(nextSixHours.details.air_temperature_min),
+        maxAirTemperature: round(nextSixHours.details.air_temperature_max),
+        precipitationAmount: round(nextSixHours.details.precipitation_amount),
         windFromDirection: details.wind_from_direction,
-        windSpeed: details.wind_speed,
+        windSpeed: round(details.wind_speed),
       };
     });
   } else if (hourly) {
@@ -283,10 +264,10 @@ function extractFutureDayOverviewOrDetailed(dayForecast, hourly = false) {
       return {
         hour: weather.time.substring(11, 16),
         weatherSymbolCode: nextOneHours.summary.symbol_code,
-        precipitationAmount: nextOneHours.details.precipitation_amount,
+        precipitationAmount: round(nextOneHours.details.precipitation_amount),
         airTemperature: details.air_temperature,
         windFromDirection: details.wind_from_direction,
-        windSpeed: details.wind_speed,
+        windSpeed: round(details.wind_speed),
       };
     });
   }
@@ -330,16 +311,28 @@ const FutureDayOverviewComponent = ({ futureDayOverview }) => {
                         : "text-blue-500"
                     }
                   >
-                    {round(weather.airTemperature)}°
+                    {weather.airTemperature}°
                   </div>
                 ) : (
                   <div>
-                    <span className="text-red-600">
-                      {round(weather.maxAirTemperature)}°
+                    <span
+                      className={
+                        weather.minAirTemperature > 0
+                          ? "text-red-600"
+                          : "text-blue-500"
+                      }
+                    >
+                      {weather.minAirTemperature}°
                     </span>
-                    /
-                    <span className="text-blue-600">
-                      {round(weather.minAirTemperature)}°
+                    <span className="ml-1 mr-1 text-gray-600">/</span>
+                    <span
+                      className={
+                        weather.maxAirTemperature > 0
+                          ? "text-red-600"
+                          : "text-blue-500"
+                      }
+                    >
+                      {weather.maxAirTemperature}°
                     </span>
                   </div>
                 )}
@@ -349,7 +342,7 @@ const FutureDayOverviewComponent = ({ futureDayOverview }) => {
               <div className="flex">
                 <UmbrellaIcon className="mr-1" width={"25px"} />
                 <div>
-                  {round(weather.precipitationAmount)}
+                  {weather.precipitationAmount}
                   <span className="text">mm</span>
                 </div>
               </div>
@@ -357,7 +350,7 @@ const FutureDayOverviewComponent = ({ futureDayOverview }) => {
             <td className="w-1/5">
               <div className="flex justify-end">
                 <WindIcon className="mr-1" width={"25px"} />
-                <span className="mr-2">{round(weather.windSpeed)}m/s</span>
+                <span className="mr-2">{weather.windSpeed}m/s</span>
                 <SVGIcon
                   className="self-end"
                   fill={"#374151"}
