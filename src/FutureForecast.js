@@ -73,16 +73,8 @@ const extractFutureDaysForecast = (futureConditions) => {
     futureDaysForecast.push({
       dayNumber: i,
       data: futureConditions.filter((obj) => {
-        return (
-          obj.time.substring(0, 10) === futureDateString &&
-          !parseInt(obj.time.substring(11, 13) === 18)
-        );
+        return obj.time.substring(0, 10) === futureDateString;
       }),
-    });
-  }
-  if (futureDaysForecast[1].data.length === 18) {
-    futureDaysForecast[1] = futureDaysForecast[1].data.filter((obj) => {
-      return obj.time.substring(11, 13) !== "18";
     });
   }
   return futureDaysForecast;
@@ -123,7 +115,6 @@ const extractTodayOverviewOrDetailed = (todayForecast, hourly = false) => {
       return hour % hourlyInterval === 0 || hour === 23;
     });
   }
-  // return most important attributes
   return forecast.map((weather) => {
     const details = weather.data.instant.details;
     const nextOneHours = weather.data.next_1_hours;
@@ -258,18 +249,20 @@ function extractFutureDayOverviewOrDetailed(dayForecast, hourly = false) {
       };
     });
   } else if (hourly) {
-    return forecast.map((weather) => {
-      const details = weather.data.instant.details;
-      const nextOneHours = weather.data.next_1_hours;
-      return {
-        hour: weather.time.substring(11, 16),
-        weatherSymbolCode: nextOneHours.summary.symbol_code,
-        precipitationAmount: round(nextOneHours.details.precipitation_amount),
-        airTemperature: round(details.air_temperature),
-        windFromDirection: details.wind_from_direction,
-        windSpeed: round(details.wind_speed),
-      };
-    });
+    return forecast
+      .filter((weather) => weather.data.next_1_hours)
+      .map((weather) => {
+        const details = weather.data.instant.details;
+        const nextOneHours = weather.data.next_1_hours;
+        return {
+          hour: weather.time.substring(11, 16),
+          weatherSymbolCode: nextOneHours.summary.symbol_code,
+          precipitationAmount: round(nextOneHours.details.precipitation_amount),
+          airTemperature: round(details.air_temperature),
+          windFromDirection: details.wind_from_direction,
+          windSpeed: round(details.wind_speed),
+        };
+      });
   }
 }
 
