@@ -30,7 +30,7 @@ const resetWeather = (dispatchWeather) => {
   dispatchWeather({ type: "RESET_WEATHER" });
 };
 
-const geoNameEndpoint = "http://api.geonames.org/postalCodeSearchJSON";
+const geoNameEndpoint = "https://secure.geonames.org/postalCodeSearchJSON";
 
 const SearchLocationComponent = ({ dispatchWeather }) => {
   const [searchTerm, setSearchTerm] = useState("");
