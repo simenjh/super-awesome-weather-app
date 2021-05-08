@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 import "./App.css";
 import SearchLocationComponent from "./SearchLocationComponent";
 import CurrentConditionsComponent from "./CurrentConditions";
@@ -125,11 +125,6 @@ const App = () => {
     }
   };
 
-  // Cases
-  // 1. A user enters a location and clicks search. The coordinates should be set in weather, triggering a redefine of fetchWeather. This triggers useEffect.
-  // 2. The program has no state, but has non-expired weather data in localstorage. Set localstorage data as the weather state.
-  // 3. The program has no state, and localstorage data has expired. Pass coordinates from localstorage to weather.
-  // 4.
   useEffect(() => {
     const localstorageExpires = localStorage.getItem("expires");
     const localStorageCoordinates = JSON.parse(
