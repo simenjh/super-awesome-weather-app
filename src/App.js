@@ -188,7 +188,7 @@ const App = () => {
           {weather.isLoading ? (
             <p>Loading...</p>
           ) : (
-            <div className="w-11/12 mb-5 md:w-3/5 lg:w-2/5">
+            <div className="w-11/12 mb-5 md:w-4/5 lg:w-3/5 xl:w-2/5">
               {weather.currentConditions && (
                 <CurrentConditionsComponent
                   location={weather.location}
