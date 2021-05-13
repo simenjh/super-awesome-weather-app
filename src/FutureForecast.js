@@ -31,12 +31,11 @@ const months = [
 ];
 
 const FutureForecast = ({ futureConditions }) => {
-  const { todayForecast, futureDaysForecast } = extractForecasts(
-    futureConditions
-  );
+  const { todayForecast, futureDaysForecast } =
+    extractForecasts(futureConditions);
 
   return (
-    <div className="flex flex-col items-center" style={{ width: "100%" }}>
+    <div className="flex flex-col items-center">
       <TodayForecastComponent todayForecast={todayForecast} />
       {futureDaysForecast.map((day) => {
         return <ForecastForFutureDay key={day.dayNumber} day={day} />;
@@ -131,10 +130,7 @@ const extractTodayOverviewOrDetailed = (todayForecast, hourly = false) => {
 
 const DayHeader = ({ dayTitle }) => {
   return (
-    <div
-      className="pt-1 pb-1 pl-2 text-lg text-center text-white bg-blue-400 rounded"
-      style={{ width: "100%" }}
-    >
+    <div className="pt-1 pb-1 pl-2 text-lg text-center text-white bg-blue-400 rounded">
       {dayTitle}
     </div>
   );

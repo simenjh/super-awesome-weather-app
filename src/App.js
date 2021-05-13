@@ -179,26 +179,28 @@ const App = () => {
 
   return (
     <div className="App">
-      <div className="outerContainer" style={{ paddingTop: "10px" }}>
-        <SearchLocationComponent dispatchWeather={dispatchWeather} />
+      <div className="flex justify-center">
+        <div className="flex flex-col items-center w-full">
+          <SearchLocationComponent dispatchWeather={dispatchWeather} />
 
-        {weather.isError && <p>Something went wrong...</p>}
+          {weather.isError && <p>Something went wrong...</p>}
 
-        {weather.isLoading ? (
-          <p>Loading...</p>
-        ) : (
-          <div className="mb-5">
-            {weather.currentConditions && (
-              <CurrentConditionsComponent
-                location={weather.location}
-                currentConditions={weather.currentConditions}
-              />
-            )}
-            {weather.futureConditions && (
-              <FutureForecast futureConditions={weather.futureConditions} />
-            )}
-          </div>
-        )}
+          {weather.isLoading ? (
+            <p>Loading...</p>
+          ) : (
+            <div className="w-11/12 mb-5 md:w-3/5 lg:w-2/5">
+              {weather.currentConditions && (
+                <CurrentConditionsComponent
+                  location={weather.location}
+                  currentConditions={weather.currentConditions}
+                />
+              )}
+              {weather.futureConditions && (
+                <FutureForecast futureConditions={weather.futureConditions} />
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

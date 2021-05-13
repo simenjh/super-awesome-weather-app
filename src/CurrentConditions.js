@@ -18,9 +18,9 @@ const CurrentConditionsComponent = ({ location, currentConditions }) => {
       <div className="overflow-hidden bg-white rounded-lg shadow">
         <div className="text-gray-700 ml-1.5 font-medium">Current weather</div>
         <div className="px-4 py-5 sm:p-6">
-          <div className="flex flex-wrap text-5xl text-gray-700 truncate font-md">
+          <div className="flex flex-col flex-wrap text-5xl text-gray-700 truncate md:flex-row font-md">
             <SVGIcon
-              className="self-center mr-4"
+              className="mr-4"
               path={`${weatherIconPath}${currentConditions.next_1_hours.summary.symbol_code}`}
               width={"50px"}
             />
