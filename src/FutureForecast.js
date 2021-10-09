@@ -4,6 +4,7 @@ import { ReactComponent as WindIcon } from "./assets/wind-icons/wind_icon.svg";
 import SVGIcon from "./SVGIcon";
 import { windFromDirectionPath, weatherIconPath } from "./icon_paths";
 import { useState } from "react";
+import moment, { now } from "moment";
 const round = Math.round;
 
 const days = [
@@ -53,7 +54,7 @@ const extractForecasts = (futureConditions) => {
 };
 
 const extractTodayForecast = (futureConditions) => {
-  const todayString = new Date().toISOString().substring(0, 10);
+  const todayString = new moment().toISOString().substring(0, 10);
 
   return futureConditions.filter((obj) => {
     return obj.time.substring(0, 10) === todayString;
@@ -62,12 +63,16 @@ const extractTodayForecast = (futureConditions) => {
 
 const extractFutureDaysForecast = (futureConditions) => {
   let futureDaysForecast = [];
-  const today = new Date();
+  const today = moment();
   for (let i = 1; i < 8; i++) {
-    const futureDateString = new Date(
-      Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + i)
-    )
-      .toISOString()
+    // const futureDateString = new Date(
+    //   Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + i)
+    // )
+    //   .toISOString()
+    //   .substring(0, 10);
+    const futureDateString = moment
+      .utc([today.year(), today.month(), today.date() + i])
+      .format()
       .substring(0, 10);
     futureDaysForecast.push({
       dayNumber: i,
@@ -107,7 +112,14 @@ const formatTodayText = () => {
 
 const extractTodayOverviewOrDetailed = (todayForecast, hourly = false) => {
   let forecast = todayForecast;
+  const nowHour = parseInt(moment().format().substring(11, 13));
   const hourlyInterval = 4;
+  if (hourly) {
+    forecast = forecast.filter((weather) => {
+      const hour = parseInt(weather.time.substring(11, 13));
+      return hour >= nowHour;
+    });
+  }
   if (!hourly) {
     forecast = forecast.filter((weather) => {
       const hour = parseInt(weather.time.substring(11, 13));

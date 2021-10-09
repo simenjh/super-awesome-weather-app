@@ -3,6 +3,7 @@ import "./App.css";
 import SearchLocationComponent from "./SearchLocationComponent";
 import CurrentConditionsComponent from "./CurrentConditions";
 import FutureForecast from "./FutureForecast";
+import moment from "moment";
 
 export const weatherReducer = (state, action) => {
   switch (action.type) {
@@ -69,7 +70,7 @@ const locationForecastEndpoint =
 
 const extractCurrentConditions = (rawData) => {
   const timeseries = rawData.properties.timeseries;
-  const nowString = new Date().toISOString().substring(0, 13);
+  const nowString = moment().format().substring(0, 13);
   const currentWeather = timeseries.find(
     (weather) => weather.time.substring(0, 13) === nowString
   );
