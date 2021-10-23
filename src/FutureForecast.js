@@ -4,7 +4,7 @@ import { ReactComponent as WindIcon } from "./assets/wind-icons/wind_icon.svg";
 import SVGIcon from "./SVGIcon";
 import { windFromDirectionPath, weatherIconPath } from "./icon_paths";
 import { useState } from "react";
-import moment, { now } from "moment";
+import moment from "moment";
 const round = Math.round;
 
 const days = [

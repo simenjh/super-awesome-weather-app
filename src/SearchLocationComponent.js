@@ -53,7 +53,7 @@ const SearchLocationComponent = ({ dispatchWeather }) => {
     dispatchSearchLocations({ type: "LOCATION_FETCH_INIT" });
     try {
       const rawData = await fetch(
-        `${geoNameEndpoint}?placename=${searchTerm}&maxRows=2&username=simen236`
+        `${geoNameEndpoint}?placename=${searchTerm}&maxRows=2&username=simen236&countryBias=NO`
       );
       const locations = await rawData.json();
       if (locations.postalCodes.length >= 1) {

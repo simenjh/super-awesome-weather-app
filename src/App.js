@@ -115,7 +115,7 @@ const App = () => {
       const rawData = await res.json();
       const currentConditions = extractCurrentConditions(rawData);
       const futureConditions = extractFutureConditions(rawData);
-      const expires = res.headers.get("expires");
+      const expires = moment().add(0.5, "hours").format(); // Set to expire in half an hour
       updateLocalStorage(currentConditions, futureConditions, expires);
       dispatchWeather({
         type: "WEATHER_FETCH_SUCCESS",
@@ -138,7 +138,7 @@ const App = () => {
       localStorage.currentConditions &&
       localStorage.futureConditions &&
       localStorage.expires &&
-      new Date(localstorageExpires) > new Date() &&
+      moment(localstorageExpires) > moment() &&
       localstorageExpires !== weather.expires
     ) {
       dispatchWeather({
