@@ -4,6 +4,10 @@ import SearchLocationComponent from "./SearchLocationComponent";
 import CurrentConditionsComponent from "./CurrentConditions";
 import FutureForecast from "./FutureForecast";
 import moment from "moment";
+import { QueryClientProvider, QueryClient, useQuery } from "react-query";
+import { ReactQueryDevtools } from "react-query/devtools";
+
+const queryClient = new QueryClient(); 
 
 export const weatherReducer = (state, action) => {
   switch (action.type) {
@@ -179,31 +183,34 @@ const App = () => {
   ]);
 
   return (
-    <div className="App">
-      <div className="flex justify-center">
-        <div className="flex flex-col items-center w-full">
-          <SearchLocationComponent dispatchWeather={dispatchWeather} />
+    <QueryClientProvider client={queryClient}>
+      <div className="App">
+        <div className="flex justify-center">
+          <div className="flex flex-col items-center w-full">
+            <SearchLocationComponent dispatchWeather={dispatchWeather} />
 
-          {weather.isError && <p>Something went wrong...</p>}
+            {weather.isError && <p>Something went wrong...</p>}
 
-          {weather.isLoading ? (
-            <p>Loading...</p>
-          ) : (
-            <div className="w-11/12 mb-5 md:w-4/5 lg:w-3/5 xl:w-2/5">
-              {weather.currentConditions && (
-                <CurrentConditionsComponent
-                  location={weather.location}
-                  currentConditions={weather.currentConditions}
-                />
-              )}
-              {weather.futureConditions && (
-                <FutureForecast futureConditions={weather.futureConditions} />
-              )}
-            </div>
-          )}
+            {weather.isLoading ? (
+              <p>Loading...</p>
+            ) : (
+              <div className="w-11/12 mb-5 md:w-4/5 lg:w-3/5 xl:w-2/5">
+                {weather.currentConditions && (
+                  <CurrentConditionsComponent
+                    location={weather.location}
+                    currentConditions={weather.currentConditions}
+                  />
+                )}
+                {weather.futureConditions && (
+                  <FutureForecast futureConditions={weather.futureConditions} />
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+    </QueryClientProvider>
   );
 };
 
