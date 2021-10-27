@@ -1,13 +1,14 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useState, useReducer } from "react";
 import "./App.css";
 import SearchLocationComponent from "./SearchLocationComponent";
 import CurrentConditionsComponent from "./CurrentConditions";
 import FutureForecast from "./FutureForecast";
 import moment from "moment";
-import { QueryClientProvider, QueryClient, useQuery } from "react-query";
+import { QueryClientProvider, QueryClient } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
+import { useFetchWeatherData } from "./Datafetching";
 
-const queryClient = new QueryClient(); 
+const queryClient = new QueryClient();
 
 export const weatherReducer = (state, action) => {
   switch (action.type) {
@@ -92,14 +93,24 @@ const updateLocalStorage = (currentConditions, futureConditions, expires) => {
 };
 
 const App = () => {
-  const [weather, dispatchWeather] = useReducer(weatherReducer, {
-    isLoading: false,
-    isError: false,
+  // const [weather, dispatchWeather] = useReducer(weatherReducer, {
+  //   isLoading: false,
+  //   isError: false,
+  //   location: null,
+  //   coordinates: { longitude: null, latitude: null },
+  //   currentConditions: null,
+  //   futureConditions: null,
+  //   expires: null,
+  // });
+
+  const { isLoading, data, isError, refetch } =
+    useFetchWeatherData("weather-data");
+
+  const [state, setState] = useState({
     location: null,
     coordinates: { longitude: null, latitude: null },
     currentConditions: null,
     futureConditions: null,
-    expires: null,
   });
 
   // Fetch weather when coordinates are updated
