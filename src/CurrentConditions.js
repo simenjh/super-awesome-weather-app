@@ -11,6 +11,7 @@ const CurrentConditionsComponent = ({ location, currentConditions }) => {
     currentConditions.next_1_hours.details.precipitation_amount;
   const tempColor =
     details.air_temperature > 0 ? "text-red-600" : "text-blue-500";
+  // console.log(details, precipitation_amount, location, tempColor);
 
   return (
     <div className="flex flex-col items-center py-10 mb-10 bg-gray-300 rounded">

@@ -13,8 +13,7 @@ const resetWeather = (state, setState) => {
 };
 
 const SearchLocationComponent = ({ state, setState }) => {
-  const transformData = async (res) => {
-    const data = await res.json();
+  const transformData = (data) => {
     if (data.postalCodes.length >= 1) {
       const postalCode = data.postalCodes[0];
 
@@ -34,9 +33,7 @@ const SearchLocationComponent = ({ state, setState }) => {
   const { isLoading, isError, refetch } = useFetch(
     "location-coordinates",
     transformData,
-    undefined,
-    undefined,
-    { searchTerm }
+    { enabled: false, searchTerm }
   );
 
   const handleSearchInput = (e) => {

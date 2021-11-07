@@ -18,34 +18,25 @@ const extractFutureConditions = (rawData) => {
   return rawData.properties.timeseries;
 };
 
-const updateLocalStorage = (currentConditions, futureConditions, expires) => {
-  localStorage.setItem("currentConditions", JSON.stringify(currentConditions));
-  localStorage.setItem("futureConditions", JSON.stringify(futureConditions));
-};
-
 const MainWeatherComponent = () => {
   const [state, setState] = useState({
+    queryEnabled: false,
     location: null,
     coordinates: { longitude: null, latitude: null },
     currentConditions: null,
     futureConditions: null,
   });
 
-  const extractData = async (res) => {
-    const data = await res.json();
+  const extractData = (data) => {
     const currentConditions = extractCurrentConditions(data);
     const futureConditions = extractFutureConditions(data);
-    console.log(currentConditions, futureConditions);
     setState({ ...state, currentConditions, futureConditions });
-    updateLocalStorage(currentConditions, futureConditions);
   };
 
   const { isLoading, isError, refetch } = useFetch(
     "weather-data",
     extractData,
-    undefined,
-    undefined,
-    { state }
+    { enabled: state.queryEnabled, state }
   );
 
   useEffect(() => {
@@ -55,13 +46,13 @@ const MainWeatherComponent = () => {
     const localStorageLocation = localStorage.getItem("location");
 
     if (state.coordinates.longitude && state.coordinates.latitude) {
-      console.log("what?");
-      refetch();
+      if (!state.queryEnabled) setState({ ...state, queryEnabled: true });
+      else refetch();
     } else if (localStorageCoordinates && localStorageLocation) {
       setState({
         ...state,
         coordinates: localStorageCoordinates,
-        location: localStorageCoordinates,
+        location: localStorageLocation,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
