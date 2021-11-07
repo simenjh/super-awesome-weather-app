@@ -1,46 +1,42 @@
-import React, { useReducer, useState } from "react";
+import React, { useState } from "react";
+import { useFetch } from "./Datafetching";
 
-const searchLocationReducer = (state, action) => {
-  switch (action.type) {
-    case "LOCATION_FETCH_INIT":
-      return {
-        ...state,
-        isLoading: true,
-        isError: false,
-      };
-    case "LOCATION_FETCH_SUCCESS":
-      return {
-        ...state,
-        isLoading: false,
-        isError: false,
-      };
-    case "LOCATION_FETCH_FAILURE":
-      return {
-        ...state,
-        isLoading: false,
-        isError: true,
-      };
-    default:
-      throw new Error();
-  }
-};
-
-const resetWeather = (dispatchWeather) => {
+const resetWeather = (state, setState) => {
   localStorage.clear();
-  dispatchWeather({ type: "RESET_WEATHER" });
+  setState({
+    ...state,
+    location: null,
+    coordinates: { longitude: null, latitude: null },
+    currentConditions: null,
+    futureConditions: null,
+  });
 };
 
-const geoNameEndpoint = "https://secure.geonames.org/postalCodeSearchJSON";
+const SearchLocationComponent = ({ state, setState }) => {
+  const transformData = async (res) => {
+    const data = await res.json();
+    if (data.postalCodes.length >= 1) {
+      const postalCode = data.postalCodes[0];
 
-const SearchLocationComponent = ({ dispatchWeather }) => {
+      const coordinates = {
+        longitude: Math.round(postalCode.lng * 10000) / 10000,
+        latitude: Math.round(postalCode.lat * 10000) / 10000,
+      };
+      localStorage.setItem("location", postalCode.placeName);
+      localStorage.setItem("coordinates", JSON.stringify(coordinates));
+
+      setState({ ...state, location: postalCode.placeName, coordinates });
+    }
+  };
+
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [searchLocations, dispatchSearchLocations] = useReducer(
-    searchLocationReducer,
-    {
-      isLoading: false,
-      isError: false,
-    }
+  const { isLoading, isError, refetch } = useFetch(
+    "location-coordinates",
+    transformData,
+    undefined,
+    undefined,
+    { searchTerm }
   );
 
   const handleSearchInput = (e) => {
@@ -49,37 +45,8 @@ const SearchLocationComponent = ({ dispatchWeather }) => {
 
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
-    resetWeather(dispatchWeather);
-    dispatchSearchLocations({ type: "LOCATION_FETCH_INIT" });
-    try {
-      const rawData = await fetch(
-        `${geoNameEndpoint}?placename=${searchTerm}&maxRows=2&username=simen236&countryBias=NO`
-      );
-      const locations = await rawData.json();
-      if (locations.postalCodes.length >= 1) {
-        const postalCode = locations.postalCodes[0];
-        dispatchSearchLocations({ type: "LOCATION_FETCH_SUCCESS" });
-
-        const coordinates = {
-          longitude: Math.round(postalCode.lng * 10000) / 10000,
-          latitude: Math.round(postalCode.lat * 10000) / 10000,
-        };
-        localStorage.setItem("location", postalCode.placeName);
-        localStorage.setItem("coordinates", JSON.stringify(coordinates));
-
-        dispatchWeather({
-          type: "SET_PLACE_COORDINATES",
-          payload: {
-            location: postalCode.placeName,
-            coordinates,
-          },
-        });
-      } else {
-        dispatchSearchLocations({ type: "LOCATION_FETCH_FAILURE" });
-      }
-    } catch (err) {
-      dispatchSearchLocations({ type: "LOCATION_FETCH_FAILURE" });
-    }
+    resetWeather(state, setState);
+    refetch();
   };
 
   return (
@@ -90,10 +57,8 @@ const SearchLocationComponent = ({ dispatchWeather }) => {
           searchTerm={searchTerm}
         />
       </form>
-      {searchLocations.isLoading && <p>Loading...</p>}
-      {searchLocations.isError && (
-        <p>No locations found... Please try again.</p>
-      )}
+      {isLoading && <p>Loading...</p>}
+      {isError && <p>No locations found... Please try again.</p>}
     </>
   );
 };

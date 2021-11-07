@@ -7,7 +7,7 @@ const geoNameEndpoint = "https://secure.geonames.org/postalCodeSearchJSON";
 
 const fetchLocationForecast = ({ state }) => {
   return () => {
-    fetch(
+    return fetch(
       `${locationForecastEndpoint}lat=${state.coordinates.latitude}&lon=${state.coordinates.longitude}`,
       {
         headers: {
@@ -20,7 +20,7 @@ const fetchLocationForecast = ({ state }) => {
 
 const fetchLocationCoordinates = ({ searchTerm }) => {
   return () => {
-    fetch(
+    return fetch(
       `${geoNameEndpoint}?placename=${searchTerm}&maxRows=2&username=simen236&countryBias=NO`,
       {
         headers: {
@@ -45,15 +45,16 @@ const fetcherFunction = (queryName, options) => {
 export const useFetch = (
   queryName,
   transformData,
-  handleSuccess,
-  handleFailure,
+  handleSuccess = null,
+  handleFailure = null,
   options = {}
 ) => {
   return useQuery(queryName, fetcherFunction(queryName, options), {
+    enabled: false,
     staleTime: 900000,
     refetchInterval: 900000,
-    select: transformData,
-    onSuccess: handleSuccess,
+    // select: transformData,
+    onSuccess: transformData,
     onError: handleFailure,
   });
 };
