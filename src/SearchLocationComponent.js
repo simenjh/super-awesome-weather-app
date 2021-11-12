@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { useFetch } from "./Datafetching";
 
-const resetWeather = (state, setState) => {
+const resetWeather = (setState) => {
   localStorage.clear();
-  setState({
+  setState((state) => ({
     ...state,
     location: null,
     coordinates: { longitude: null, latitude: null },
     currentConditions: null,
     futureConditions: null,
-  });
+  }));
 };
 
-const SearchLocationComponent = ({ state, setState }) => {
+const SearchLocationComponent = ({ setState }) => {
   const transformData = (data) => {
     if (data.postalCodes.length >= 1) {
       const postalCode = data.postalCodes[0];
@@ -24,7 +24,11 @@ const SearchLocationComponent = ({ state, setState }) => {
       localStorage.setItem("location", postalCode.placeName);
       localStorage.setItem("coordinates", JSON.stringify(coordinates));
 
-      setState({ ...state, location: postalCode.placeName, coordinates });
+      setState((state) => ({
+        ...state,
+        location: postalCode.placeName,
+        coordinates,
+      }));
     }
   };
 
@@ -42,7 +46,7 @@ const SearchLocationComponent = ({ state, setState }) => {
 
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
-    resetWeather(state, setState);
+    resetWeather(setState);
     refetch();
   };
 
